@@ -1,2 +1,2 @@
-# Projeto para exemplificar a importância do uso do cancelationtoken
+# Exemplo de uso do cancelationtoken
 
