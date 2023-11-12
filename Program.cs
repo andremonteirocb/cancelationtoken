@@ -1,3 +1,5 @@
+using Bogus;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -12,16 +14,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-List<string> requests = new List<string>();
-app.MapGet("/datas", async (ILogger<Program> logger, CancellationToken cancellation) =>
+var usuarios = new List<string>();
+
+app.MapGet("/sem-cancelation", async (ILogger<Program> logger) =>
 {
     try
     {
         logger.LogInformation($"Iniciando o request {DateTime.Now}");
 
-        await Task.Delay(5000, cancellation);
+        await Task.Delay(3000);
 
-        requests.Add(DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+        usuarios.Add(new Faker().Person.FullName);
         logger.LogInformation($"Finalizando o request {DateTime.Now}");
     }
     catch// (TaskCanceledException ex)
@@ -32,9 +35,33 @@ app.MapGet("/datas", async (ILogger<Program> logger, CancellationToken cancellat
     return new
     {
         Sucesso = true,
-        Data = requests
+        Data = usuarios
     };
 })
-.WithName("datas");
+.WithName("sem-cancelation");
+
+app.MapGet("/com-cancelation", async (ILogger<Program> logger, CancellationToken cancellation) =>
+{
+    try
+    {
+        logger.LogInformation($"Iniciando o request {DateTime.Now}");
+
+        await Task.Delay(3000, cancellation);
+
+        usuarios.Add(new Faker().Person.FullName);
+        logger.LogInformation($"Finalizando o request {DateTime.Now}");
+    }
+    catch// (TaskCanceledException ex)
+    {
+        logger.LogInformation($"Request cancelado {DateTime.Now}");
+    }
+
+    return new
+    {
+        Sucesso = true,
+        Data = usuarios
+    };
+})
+.WithName("com-cancelation");
 
 app.Run();
